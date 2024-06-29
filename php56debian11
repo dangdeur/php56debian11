@@ -1,0 +1,64 @@
+#!/bin/bash
+echo "Installasi PHP 5.6 Di Debian 11"
+echo "Versi awal 29062024"
+echo "Endang Suhendar"
+echo "Hari ini " `date`
+echo "Gunakan perintah berikut chmod u+x nama_file_ini.sh"
+echo "Jalankan dengan perintah sh nama_file_ini.sh"
+
+
+if [ `id -u` -ne 0 ]
+  then echo "Harap login dengan akses root"
+  exit
+fi
+
+echo "Anda login sebagai root"
+
+echo "Tutup dulu repository lainnya"
+sed -i -e "/deb/s/^;*/#/" /etc/apt/sources.list &
+
+echo "Menambahkan repository online"
+sh -c 'echo "deb http://deb.debian.org/debian $(lsb_release -sc) main" > /etc/apt/sources.list' &
+
+echo "Update repository"
+apt update &
+
+function cekaplikasi() {
+    return dpkg -l "$1" &> /dev/null
+}
+
+echo "Install aplikasi wajib"
+apt install software-properties-common ca-certificates lsb-release apt-transport-https &
+
+if ! package_exists wget ; then
+    echo ”Aplikasi wget tidak ditemukan"
+    echo ”Install aplikasi wget"
+    apt install wget
+fi
+
+if ! package_exists gnupg ; then
+    echo ”Aplikasi gnupg tidak ditemukan"
+    echo ”Install aplikasi gnupg"
+    apt install gnupg
+fi
+
+echo "Menambahkan repository PHP"
+sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' &
+
+echo "Import key GPG"
+wget -qO - https://packages.sury.org/php/apt.gpg |  apt-key add - &
+
+echo "Update repository"
+apt update &
+
+echo "Install PHP 5.6"
+apt install php5.6 &
+
+if [ ! -e /var/www/html/info.php ]; then
+  echo "<?php phpinfo(); ?>" >> /var/www/html/info.php
+fi
+
+echo "Installasi PHP 5.6 telah selesai"
+echo "Cek dari browser ke <IP SERVER>/info.php"
+
+
